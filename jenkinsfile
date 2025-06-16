@@ -46,7 +46,9 @@ spec:
         container('python') {
           sh '''
             . $VENV_DIR/bin/activate
-            pytest --junitxml=test-results.xml
+            cd data_ingestion_postgres/src
+            export PYTHONPATH=$(pwd)
+            pytest test_etl_to_postgres.py --junitxml=../../test-results.xml
           '''
         }
       }
