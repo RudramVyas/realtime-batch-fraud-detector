@@ -68,7 +68,7 @@ spec:
 
     stage('Publish Test Results') {
       steps {
-        junit 'test-results.xml'
+        junit 'data-ingestion-postgres/test-results.xml'
       }
     }
   }
