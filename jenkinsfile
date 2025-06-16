@@ -56,6 +56,14 @@ spec:
       }
     }
 
+    stage('Debug Workspace') {
+      steps {
+        container('python') {
+          sh 'echo "WORKSPACE=$WORKSPACE" && ls -la $WORKSPACE'
+        }
+      }
+    }
+
     stage('Fix Permissions') {
       steps {
         container('python') {
