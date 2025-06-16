@@ -41,19 +41,19 @@ spec:
       }
     }
 
-    stage('Run Unit Tests') {
-      steps {
-        container('python') {
-          sh '''
-            . $VENV_DIR/bin/activate
-            cd data_ingestion_postgres/src
-            export PYTHONPATH=$(pwd)
-            pytest --cache-clear  # Clear pytest cache before running tests to avoid permission issues
-            pytest test_etl_to_postgres.py --junitxml=../../test-results.xml
-          '''
-        }
-      }
+stage('Run Unit Tests') {
+  steps {
+    container('python') {
+      sh '''
+        . $VENV_DIR/bin/activate
+        cd data_ingestion_postgres/src
+        export PYTHONPATH=$(pwd)
+        pytest --cache-clear
+        pytest test_etl_to_postgres.py --junitxml=../../test-results.xml
+      '''
     }
+  }
+}
 
     stage('Publish Test Results') {
       steps {
