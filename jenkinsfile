@@ -49,7 +49,7 @@ spec:
             cd data_ingestion_postgres/src
             export PYTHONPATH=$(pwd)
             pytest --cache-clear
-            pytest test_etl_to_postgres.py --junitxml=../../test-results.xml
+            pytest test_etl_to_postgres.py --junitxml=/var/lib/jenkins/workspace/data-ingestion-postgres/test-results.xml
           '''
         }
       }
