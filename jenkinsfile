@@ -48,8 +48,9 @@ spec:
             . $VENV_DIR/bin/activate
             cd data_ingestion_postgres/src
             export PYTHONPATH=$(pwd)
+            mkdir -p test-reports
             pytest --cache-clear
-            pytest test_etl_to_postgres.py --junitxml=/var/lib/jenkins/workspace/data-ingestion-postgres/test-results.xml
+            pytest test_etl_to_postgres.py --junitxml=test-reports/test-results.xml
           '''
         }
       }
@@ -68,7 +69,25 @@ spec:
 
     stage('Publish Test Results') {
       steps {
-        junit 'data-ingestion-postgres/test-results.xml'
+        junit 'data_ingestion_postgres/src/test-reports/test-results.xml'
+      }
+    }
+
+    stage('Push Test Results to GitHub') {
+      steps {
+        container('python') {
+          withCredentials([usernamePassword(credentialsId: 'github-creds', usernameVariable: 'GIT_USER', passwordVariable: 'GIT_PASS')]) {
+            sh '''
+              cd data_ingestion_postgres/src
+              git config --global user.email "jenkins@example.com"
+              git config --global user.name "Jenkins CI"
+              git remote set-url origin https://${GIT_USER}:${GIT_PASS}@github.com/your_org_or_user/your_repo.git
+              git add test-reports/test-results.xml
+              git commit -m "Add test results from Jenkins"
+              git push origin dev_testing
+            '''
+          }
+        }
       }
     }
   }
