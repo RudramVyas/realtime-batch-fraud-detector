@@ -78,10 +78,9 @@ spec:
     stage('Publish Test Results') {
       steps {
         junit 'data_ingestion_postgres/src/test-results.xml'
+        archiveArtifacts artifacts: 'data_ingestion_postgres/src/test-results.xml', fingerprint: true
       }
     }
-
-   
   }
 
   post {
