@@ -55,6 +55,17 @@ spec:
       }
     }
 
+    stage('Fix Permissions') {
+      steps {
+        container('python') {
+          sh '''
+            echo "Making workspace writable..."
+            chmod -R u+w ../../
+          '''
+        }
+      }
+    }
+
     stage('Publish Test Results') {
       steps {
         junit 'test-results.xml'
