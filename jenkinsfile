@@ -41,19 +41,19 @@ spec:
       }
     }
 
-stage('Run Unit Tests') {
-  steps {
-    container('python') {
-      sh '''
-        . $VENV_DIR/bin/activate
-        cd data_ingestion_postgres/src
-        export PYTHONPATH=$(pwd)
-        pytest --cache-clear
-        pytest test_etl_to_postgres.py --junitxml=../../test-results.xml
-      '''
+    stage('Run Unit Tests') {
+      steps {
+        container('python') {
+          sh '''
+            . $VENV_DIR/bin/activate
+            cd data_ingestion_postgres/src
+            export PYTHONPATH=$(pwd)
+            pytest --cache-clear
+            pytest test_etl_to_postgres.py --junitxml=../../test-results.xml
+          '''
+        }
+      }
     }
-  }
-}
 
     stage('Publish Test Results') {
       steps {
@@ -65,13 +65,10 @@ stage('Run Unit Tests') {
   post {
     always {
       script {
-        // Make files writable to avoid permission issues, then delete everything safely
         sh '''
-          echo "Making workspace writable to avoid permission errors..."
-          chmod -R u+w .
-
-          echo "Deleting workspace except .pytest_cache..."
-          find . -name ".pytest_cache" -prune -o -exec rm -rf {} + || true
+          echo "Cleaning pytest and Python cache folders to avoid permission issues..."
+          rm -rf data_ingestion_postgres/src/.pytest_cache || true
+          find data_ingestion_postgres/src -type d -name "__pycache__" -exec rm -rf {} + || true
         '''
       }
     }
