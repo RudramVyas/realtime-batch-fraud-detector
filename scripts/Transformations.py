@@ -11,7 +11,7 @@ spark = SparkSession.builder \
     .enableHiveSupport() \
     .getOrCreate()
 
-
+# Load data from Hive table
 df = spark.sql("SELECT * FROM bd_class_project.cc_fraud_trans WHERE transaction_id != 'Transaction_ID'")
 
 total_rows = df.count()
