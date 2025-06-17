@@ -66,12 +66,12 @@ pipeline {
                         apiVersion: v1
                         kind: ConfigMap
                         metadata:
-                        name: db-config
-                        namespace: default
+                            name: db-config
+                            namespace: default
                         data:
-                        DB_HOST: 172.31.14.3
-                        DB_NAME: testdb
-                        TABLE_NAME: cc_fraud_streaming_data
+                            DB_HOST: 172.31.14.3
+                            DB_NAME: testdb
+                            TABLE_NAME: cc_fraud_streaming_data
                         EOF
                     '''
                     
@@ -88,12 +88,12 @@ pipeline {
                             apiVersion: v1
                             kind: Secret
                             metadata:
-                            name: db-credentials
-                            namespace: default
+                                name: db-credentials
+                                namespace: default
                             type: Opaque
                             stringData:
-                            DB_USERNAME: ${DB_USERNAME}
-                            DB_PASSWORD: ${DB_PASSWORD}
+                                DB_USERNAME: ${DB_USERNAME}
+                                DB_PASSWORD: ${DB_PASSWORD}
                             EOF
                         '''
                     }
