@@ -55,7 +55,7 @@ pipeline {
             steps {
                 script {
                     // Verify that the deployment files exist
-                    sh 'ls -al k8s/'
+                    sh 'ls -al api/k8s/'
                 }
             }
         }
