@@ -6,7 +6,7 @@ pipeline {
         FAST_APP_PORT = '5310'
         SERVER_IP = '18.134.163.221' // Replace with your server's public IP
         KUBECONFIG = credentials('kubeconfig-file') // Reference the kubeconfig credential
-        KUBE_NAMESPACE  = 'big-data-project'
+        KUBE_NAMESPACE  = 'default'
     }
     stages {
         stage('Clone Repository') {
