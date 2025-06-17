@@ -59,5 +59,22 @@ pipeline {
                 }
             }
         }
+        stage('Deploy to Kubernetes') {
+            steps {
+                script {
+                    // Apply the Kubernetes deployment and service files
+                    sh '''
+                    kubectl apply -f k8s/deployment.yaml
+                    kubectl apply -f k8s/service.yaml
+                    '''
+                }
+            }
+        }
+    }
+    post {
+        success {
+            // Output the full URL to access the Flask API
+            echo "Build succeeded. The Flask API is running at http://${SERVER_IP}:${FLASK_APP_PORT}/data"
+        }
     }
 }
