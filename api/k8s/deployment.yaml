@@ -21,13 +21,13 @@ spec:
         ports:
         - containerPort: 5310
         env:
-        - name: ENDPOINT
-          value: "${env.ENDPOINT}"
-        - name: USER
-          value: "${env.USER}"
-        - name: PASSWORD
-          value: "${env.PASSWORD}"
-        - name: PORT
-          value: "${env.PORT}"
-        - name: DATABASE
-          value: "${env.DATABASE}"
+        - name: DB_HOST
+          value: 172.31.14.3
+        - name: DB_USERNAME
+          value: "consultants"
+        - name: DB_PASSWORD
+          value: "WelcomeItc@2022"
+        # - name: PORT
+        #   value: 5432
+        - name: DB_NAME
+          value: "testdb"
