@@ -5,6 +5,7 @@ pipeline {
         DOCKER_IMAGE = 'tc349/streaming-data-api:v2'
         FLASK_APP_PORT = '5310'
         SERVER_IP = '18.134.163.221' // Replace with your server's public IP
+        KUBECONFIG = credentials('kubeconfig-file') // Reference the kubeconfig credential
     }
     stages {
         stage('Clone Repository') {
