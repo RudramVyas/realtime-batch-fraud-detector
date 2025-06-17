@@ -54,6 +54,11 @@ pipeline {
         stage('Create Kubernetes Secrets and ConfigMaps') {
             steps {
                 script {
+                    // Debugging steps to check kubectl setup
+                    sh 'kubectl version --client'               // Check if kubectl is installed
+                    sh 'kubectl config current-context || echo "No context set"' // Check current context
+                    sh 'kubectl config get-contexts || echo "No contexts available"' // List available contexts
+
                     // Create ConfigMap for non-sensitive data
                     sh '''
                         kubectl create configmap db-config \
