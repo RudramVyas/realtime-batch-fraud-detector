@@ -72,6 +72,7 @@ pipeline {
                     }
                 }
             }
+        }
         stage('Verify Deployment Files') {
             steps {
                 script {
