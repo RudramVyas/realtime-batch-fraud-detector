@@ -6,6 +6,7 @@ pipeline {
         FLASK_APP_PORT = '5310'
         SERVER_IP = '18.134.163.221' // Replace with your server's public IP
         KUBECONFIG = credentials('kubeconfig-file') // Reference the kubeconfig credential
+        KUBE_NAMESPACE  = 'big-data-project'
     }
     stages {
         stage('Clone Repository') {
@@ -55,25 +56,32 @@ pipeline {
         stage('Create Kubernetes Secrets and ConfigMaps') {
             steps {
                 script {
-                    // Debugging steps to check kubectl setup
-                    sh 'kubectl version --client'               // Check if kubectl is installed
-                    sh 'kubectl config current-context || echo "No context set"' // Check current context
-                    sh 'kubectl config get-contexts || echo "No contexts available"' // List available contexts
+                    withCredentials([
+                        file(credentialsId: 'kubeconfig-file', variable: 'KUBECONFIG'),
+                        string(credentialsId: 'db-username',    variable: 'DB_USERNAME'),
+                        string(credentialsId: 'db-password',    variable: 'DB_PASSWORD')
+                    ]) {
+                        // ensure kubectl is using the right cluster
+                        sh 'kubectl version --client'
+                        sh 'kubectl config current-context'
 
-                    // Create ConfigMap for non-sensitive data
-                    sh '''
-                        kubectl apply configmap db-config \
+                        // ConfigMap
+                        sh '''
+                        kubectl create configmap db-config \
                             --from-literal=DB_HOST=172.31.14.3 \
                             --from-literal=DB_NAME=testdb \
-                            --from-literal=TABLE_NAME=cc_fraud_streaming_data
-                    '''
-                    // Create Secret for sensitive data using Jenkins credentials
-                    withCredentials([string(credentialsId: 'db-username', variable: 'DB_USERNAME'),
-                                     string(credentialsId: 'db-password', variable: 'DB_PASSWORD')]) {
+                            --from-literal=TABLE_NAME=cc_fraud_streaming_data \
+                            --dry-run=client -o yaml \
+                        | kubectl apply -n ${KUBE_NAMESPACE} -f -
+                        '''
+
+                        // Secret
                         sh '''
-                            kubectl apply secret generic db-credentials \
-                                --from-literal=DB_USERNAME=${DB_USERNAME} \
-                                --from-literal=DB_PASSWORD=${DB_PASSWORD}
+                        kubectl create secret generic db-credentials \
+                            --from-literal=DB_USERNAME=${DB_USERNAME} \
+                            --from-literal=DB_PASSWORD=${DB_PASSWORD} \
+                            --dry-run=client -o yaml \
+                        | kubectl apply -n ${KUBE_NAMESPACE} -f -
                         '''
                     }
                 }
