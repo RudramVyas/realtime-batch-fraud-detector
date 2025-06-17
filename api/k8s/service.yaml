@@ -7,9 +7,9 @@ metadata:
 spec:
   selector:
     app: fast-api
+  type: NodePort     # Use LoadBalancer for external access to the service
   ports:
     - protocol: TCP
       port: 80           # The port the service will expose
       targetPort: 5310   # The port the Fast API is running on inside the container
-      targetPort: 30080   # Expose on EC2's IP and port 30080
-  type: NodePort     # Use LoadBalancer for external access to the service
+      nodePort: 30080   # Expose on EC2's IP and port 30080
