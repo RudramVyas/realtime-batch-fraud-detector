@@ -51,6 +51,27 @@ pipeline {
                 }
             }
         }
+        stage('Create Kubernetes Secrets and ConfigMaps') {
+            steps {
+                script {
+                    // Create ConfigMap for non-sensitive data
+                    sh '''
+                        kubectl create configmap db-config \
+                            --from-literal=DB_HOST=172.31.14.3 \
+                            --from-literal=DB_NAME=testdb
+                            --from-literal=TABLE_NAME=cc_fraud_streaming_data
+                    '''
+                    // Create Secret for sensitive data using Jenkins credentials
+                    withCredentials([string(credentialsId: 'db-username', variable: 'DB_USERNAME'),
+                                     string(credentialsId: 'db-password', variable: 'DB_PASSWORD')]) {
+                        sh '''
+                            kubectl create secret generic db-credentials \
+                                --from-literal=DB_USERNAME=${DB_USERNAME} \
+                                --from-literal=DB_PASSWORD=${DB_PASSWORD}
+                        '''
+                    }
+                }
+            }
         stage('Verify Deployment Files') {
             steps {
                 script {

@@ -22,12 +22,27 @@ spec:
         - containerPort: 5310
         env:
         - name: DB_HOST
-          value: 172.31.14.3
-        - name: DB_USERNAME
-          value: "consultants"
-        - name: DB_PASSWORD
-          value: "WelcomeItc@2022"
-        # - name: PORT
-        #   value: 5432
+          valueFrom:
+            configMapKeyRef:
+              name: db-config
+              key: DB_HOST
         - name: DB_NAME
-          value: "testdb"
+          valueFrom:
+            configMapKeyRef:
+              name: db-config
+              key: DB_NAME
+        - name: TABLE_NAME
+          valueFrom:
+            configMapKeyRef:
+              name: db-config
+              key: TABLE_NAME
+        - name: DB_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: db-credentials
+              key: DB_USERNAME
+        - name: DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: db-credentials
+              key: DB_PASSWORD
