@@ -36,7 +36,7 @@ for c in arr_cols:
     df = df.withColumn(new_col_name, array_to_vector_udf(col(c)))
 
 
-feature_cols = ['user_id', 'transaction_amount', 'account_balance', 'card_age', 'ip_address_flag',
+feature_cols = ['transaction_amount', 'account_balance', 'card_age', 'ip_address_flag',
                 'avg_transaction_amount_7d', 'risk_score', 'is_weekend', 'risk_score',
                 'previous_fraudulent_activity', 'daily_transaction_count','transaction_distance',
                 'device_type_vec', 'merchant_category_vec', 'card_type_vec', 'location_vec', 
