@@ -60,20 +60,41 @@ pipeline {
                     sh 'kubectl config current-context || echo "No context set"' // Check current context
                     sh 'kubectl config get-contexts || echo "No contexts available"' // List available contexts
 
-                    // Create ConfigMap for non-sensitive data
+                    // Create or update ConfigMap for non-sensitive data
                     sh '''
-                        kubectl create configmap db-config \
-                            --from-literal=DB_HOST=172.31.14.3 \
-                            --from-literal=DB_NAME=testdb \
-                            --from-literal=TABLE_NAME=cc_fraud_streaming_data
+                        kubectl apply -f - <<EOF
+                        apiVersion: v1
+                        kind: ConfigMap
+                        metadata:
+                        name: db-config
+                        namespace: default
+                        data:
+                        DB_HOST: 172.31.14.3
+                        DB_NAME: testdb
+                        TABLE_NAME: cc_fraud_streaming_data
+                        EOF
                     '''
+                    
                     // Create Secret for sensitive data using Jenkins credentials
                     withCredentials([string(credentialsId: 'db-username', variable: 'DB_USERNAME'),
                                      string(credentialsId: 'db-password', variable: 'DB_PASSWORD')]) {
                         sh '''
-                            kubectl create secret generic db-credentials \
+                            kubectl apply secret generic db-credentials \
                                 --from-literal=DB_USERNAME=${DB_USERNAME} \
                                 --from-literal=DB_PASSWORD=${DB_PASSWORD}
+                        '''
+                        sh '''
+                            kubectl apply -f - <<EOF
+                            apiVersion: v1
+                            kind: Secret
+                            metadata:
+                            name: db-credentials
+                            namespace: default
+                            type: Opaque
+                            stringData:
+                            DB_USERNAME: ${DB_USERNAME}
+                            DB_PASSWORD: ${DB_PASSWORD}
+                            EOF
                         '''
                     }
                 }
