@@ -9,7 +9,7 @@ pipeline {
     stages {
         stage('Clone Repository') {
             steps {
-                git url: 'https://github.com/tc349/Big_Data_Project.git', branch: 'main'
+                git url: 'https://github.com/tc349/Big_Data_Project.git', branch: 'feature/streaming-data-api'
             }
         }
         stage('Set Up Virtual Environment') {
