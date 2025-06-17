@@ -58,8 +58,7 @@ pipeline {
                 script {
                     withCredentials([
                         file(credentialsId: 'kubeconfig-file', variable: 'KUBECONFIG'),
-                        usernamePassword(credentialsId: 'db-username', passwordVariable: 'DB_USERNAME'),
-                        usernamePassword(credentialsId: 'db-password', passwordVariable: 'DB_PASSWORD')
+                        usernamePassword(credentialsId: 'db-creds', usernameVariable: 'DB_USERNAME', passwordVariable: 'DB_PASSWORD')
                     ]) {
                         // ensure kubectl is using the right cluster
                         sh 'kubectl version --client'
