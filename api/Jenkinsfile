@@ -3,7 +3,7 @@ pipeline {
     environment {
         VENV_DIR = 'venv'
         DOCKER_IMAGE = 'tc349/streaming-data-api:v2'
-        FLASK_APP_PORT = '5310'
+        FAST_APP_PORT = '5310'
         SERVER_IP = '18.134.163.221' // Replace with your server's public IP
         KUBECONFIG = credentials('kubeconfig-file') // Reference the kubeconfig credential
         KUBE_NAMESPACE  = 'big-data-project'
@@ -58,8 +58,8 @@ pipeline {
                 script {
                     withCredentials([
                         file(credentialsId: 'kubeconfig-file', variable: 'KUBECONFIG'),
-                        string(credentialsId: 'db-username',    variable: 'DB_USERNAME'),
-                        string(credentialsId: 'db-password',    variable: 'DB_PASSWORD')
+                        usernamePassword(credentialsId: 'db-username', passwordVariable: 'DB_USERNAME'),
+                        usernamePassword(credentialsId: 'db-password', passwordVariable: 'DB_PASSWORD')
                     ]) {
                         // ensure kubectl is using the right cluster
                         sh 'kubectl version --client'
@@ -110,7 +110,7 @@ pipeline {
     post {
         success {
             // Output the full URL to access the Flask API
-            echo "Build succeeded. The Flask API is running at http://${SERVER_IP}:${FLASK_APP_PORT}/data"
+            echo "Build succeeded. The Flask API is running at http://${SERVER_IP}:${FAST_APP_PORT}/data"
         }
     }
 }
