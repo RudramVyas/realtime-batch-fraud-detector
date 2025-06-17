@@ -62,7 +62,7 @@ pipeline {
 
                     // Create or update ConfigMap for non-sensitive data
                     sh '''
-                        kubectl apply -f - <<EOF
+                        cat <<EOF | kubectl apply -f -
                         apiVersion: v1
                         kind: ConfigMap
                         metadata:
@@ -84,7 +84,7 @@ pipeline {
                                 --from-literal=DB_PASSWORD=${DB_PASSWORD}
                         '''
                         sh '''
-                            kubectl apply -f - <<EOF
+                            cat <<EOF | kubectl apply -f -
                             apiVersion: v1
                             kind: Secret
                             metadata:
