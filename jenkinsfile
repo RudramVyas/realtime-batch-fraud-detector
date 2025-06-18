@@ -95,15 +95,21 @@ spec:
   }
 
   post {
-    always {
-      container('python') {
-        sh '''
-          echo "Cleaning pytest and Python cache folders to avoid permission issues..."
-          rm -rf data_ingestion_postgres/src/.pytest_cache || true
-          rm -rf api/src/.pytest_cache || true
-          find . -type d -name '__pycache__' -exec sh -c 'chmod -R u+w "$0" && rm -rf "$0"' {} \; || true
-        '''
+      always {
+        container('python') {
+          sh '''
+            echo "Cleaning pytest and Python cache folders to avoid permission issues..."
+            rm -rf data_ingestion_postgres/src/.pytest_cache || true
+            rm -rf api/src/.pytest_cache || true
+
+            # Find and clean __pycache__ directories safely
+            for dir in $(find . -type d -name '__pycache__'); do
+              chmod -R u+w "$dir" || true
+              rm -rf "$dir" || true
+            done
+          '''
+        }
       }
     }
-  }
+
 }
