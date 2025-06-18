@@ -78,17 +78,14 @@ stage('Push HTML Reports to GitHub') {
     container('python') {
       withCredentials([string(credentialsId: 'github-pat', variable: 'GITHUB_TOKEN')]) {
         sh '''
+          apt-get update && apt-get install -y git
+
           git config --global user.email "jenkins@example.com"
           git config --global user.name "Jenkins CI"
 
-          # Clone the dev_testing branch using your token
           git clone --branch dev_testing https://$GITHUB_TOKEN@github.com/tc349/Big_Data_Project.git temp-repo
 
-
-          # Make sure the destination folder exists
           mkdir -p temp-repo/test/reports
-
-          # Copy HTML reports into the desired location
           cp -r test-reports/*.html temp-repo/test/reports/
 
           cd temp-repo
@@ -100,6 +97,7 @@ stage('Push HTML Reports to GitHub') {
     }
   }
 }
+
 
 
 
