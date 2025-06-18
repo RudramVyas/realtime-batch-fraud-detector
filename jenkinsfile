@@ -41,35 +41,60 @@ spec:
       }
     }
 
+    // stage('Run ETL Unit Tests') {
+    //   steps {
+    //     container('python') {
+    //       sh '''
+    //         . $VENV_DIR/bin/activate
+    //         cd data_ingestion_postgres/src
+    //         export PYTHONPATH=$(pwd)
+    //         mkdir -p test-reports
+    //         pytest --cache-clear
+    //         pytest ../../test_etl_to_postgres.py --junitxml=test-results-etl.xml
+    //       '''
+    //     }
+    //   }
+    // }
     stage('Run ETL Unit Tests') {
-      steps {
-        container('python') {
-          sh '''
-            . $VENV_DIR/bin/activate
-            cd data_ingestion_postgres/src
-            export PYTHONPATH=$(pwd)
-            mkdir -p test-reports
-            pytest --cache-clear
-            pytest ../../test_etl_to_postgres.py --junitxml=test-results-etl.xml
-          '''
-        }
-      }
+       steps {
+         container('python') {
+            sh '''
+              . $VENV_DIR/bin/activate
+              mkdir -p test-reports
+              # Run only ETL tests
+              pytest --cache-clear test/test_etl_to_postgres.py --junitxml=test-reports/test-results-etl.xml
+            '''
     }
+  }
+}
+
+    // stage('Run API Unit Tests') {
+    //   steps {
+    //     container('python') {
+    //       sh '''
+    //         . $VENV_DIR/bin/activate
+    //         cd api/src
+    //         export PYTHONPATH=$(pwd)
+    //         mkdir -p test-reports
+    //         pytest --cache-clear
+    //         pytest ../../test/test_stream_api.py --junitxml=test-results-api.xml
+    //       '''
+    //     }
+    //   }
+    // }
 
     stage('Run API Unit Tests') {
       steps {
         container('python') {
           sh '''
             . $VENV_DIR/bin/activate
-            cd api/src
-            export PYTHONPATH=$(pwd)
             mkdir -p test-reports
-            pytest --cache-clear
-            pytest ../../test/test_stream_api.py --junitxml=test-results-api.xml
+            # Run only API tests
+            pytest --cache-clear test/test_stream_api.py --junitxml=test-reports/test-results-api.xml
           '''
-        }
-      }
     }
+  }
+}
 
     stage('Publish Test Results') {
       steps {
