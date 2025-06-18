@@ -31,16 +31,16 @@ echo "Starting new import from Timestamp greater than $lastValue"
 
 # Perform the incremental Sqoop import
 sqoop import \
-    --connect jdbc:postgresql://${hostName}:5432/${dbName} \
-    --userName ${userName} \
-    --password ${password} \
-    --table ${TABLE} \
-    --incremental append \
-    --check-column Timestamp \
-    --last-value ${lastValue} \
-    --target-dir ${targetDir} \
-    --m 1 \
-    --as-textfile
+  --connect jdbc:postgresql://${hostName}:5432/${dbName} \
+  --username ${userName} \
+  --password ${password} \
+  --table ${TABLE} \
+  --incremental append \
+  --check-column Timestamp \
+  --last-value "${lastValue}" \
+  --target-dir ${targetDir} \
+  --m 1 \
+  --as-textfile
 	
 # Check if the Sqoop import was successful
 if [ $? -eq 0 ]; then
