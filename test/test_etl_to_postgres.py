@@ -2,6 +2,8 @@ import os
 import pytest
 import pandas as pd
 from unittest.mock import patch, MagicMock
+from datetime import datetime, timedelta
+
 from etl_to_postgres import (
     create_db_engine,
     full_load,
@@ -10,21 +12,29 @@ from etl_to_postgres import (
     load_environment,
 )
 
-# Sample CSV content as a pandas DataFrame for mocking
-sample_df = pd.DataFrame({
+# Sample DataFrame for full and stream load
+sample_df_basic = pd.DataFrame({
     'col1': [1, 2],
     'col2': ['a', 'b']
 })
 
+# Sample DataFrame with Timestamp for incremental load
+sample_df_with_timestamp = pd.DataFrame({
+    'col1': [1, 2],
+    'col2': ['a', 'b'],
+    'Timestamp': [
+        datetime.now() + timedelta(minutes=1),
+        datetime.now() + timedelta(minutes=2)
+    ]
+})
+
 def test_load_environment(monkeypatch):
-    # Test that dotenv loads without error (mocked)
     with patch('etl_to_postgres.load_dotenv') as mock_load_dotenv:
         load_environment('fake_path')
         mock_load_dotenv.assert_called_once_with(dotenv_path='fake_path')
 
 @patch('etl_to_postgres.create_engine')
 def test_create_db_engine_success(mock_create_engine, monkeypatch):
-    # Setup env variables
     monkeypatch.setenv("DB_USERNAME", "user")
     monkeypatch.setenv("DB_PASSWORD", "pass")
     monkeypatch.setenv("DB_HOST", "localhost")
@@ -39,7 +49,6 @@ def test_create_db_engine_success(mock_create_engine, monkeypatch):
     assert engine == mock_engine
 
 def test_create_db_engine_missing_env(monkeypatch):
-    # Clear env vars to simulate missing variable
     monkeypatch.delenv("DB_USERNAME", raising=False)
     monkeypatch.delenv("DB_PASSWORD", raising=False)
     monkeypatch.delenv("DB_HOST", raising=False)
@@ -51,34 +60,66 @@ def test_create_db_engine_missing_env(monkeypatch):
 
 @patch('etl_to_postgres.pd.read_csv')
 def test_full_load_success(mock_read_csv):
-    mock_read_csv.return_value = sample_df
+    mock_read_csv.return_value = sample_df_basic
     mock_engine = MagicMock()
 
-    # Mock to_sql method on DataFrame
-    with patch.object(sample_df, 'to_sql') as mock_to_sql:
+    with patch.object(sample_df_basic, 'to_sql') as mock_to_sql:
         mock_to_sql.return_value = None
         full_load(mock_engine, 'fake.csv', 'table_name')
         mock_read_csv.assert_called_once_with('fake.csv')
-        mock_to_sql.assert_called_once_with(name='table_name', con=mock_engine, if_exists='replace', index=False)
+        mock_to_sql.assert_called_once_with(
+            name='table_name', con=mock_engine, if_exists='replace', index=False
+        )
 
 @patch('etl_to_postgres.pd.read_csv')
 def test_incremental_load_success(mock_read_csv):
-    mock_read_csv.return_value = sample_df
+    mock_read_csv.return_value = sample_df_with_timestamp
     mock_engine = MagicMock()
 
-    with patch.object(sample_df, 'to_sql') as mock_to_sql:
+    # Simulate SELECT MAX("Timestamp") returning an earlier datetime
+    mock_conn = MagicMock()
+    mock_conn.__enter__.return_value.execute.return_value.scalar.return_value = datetime.now() - timedelta(days=1)
+    mock_engine.connect.return_value = mock_conn
+
+    with patch.object(sample_df_with_timestamp, 'to_sql') as mock_to_sql:
         mock_to_sql.return_value = None
         incremental_load(mock_engine, 'fake.csv', 'table_name')
         mock_read_csv.assert_called_once_with('fake.csv')
-        mock_to_sql.assert_called_once_with(name='table_name', con=mock_engine, if_exists='append', index=False)
+        mock_to_sql.assert_called_once_with(
+            name='table_name', con=mock_engine, if_exists='append', index=False
+        )
+
+@patch('etl_to_postgres.pd.read_csv')
+def test_incremental_load_no_new_data(mock_read_csv):
+    # Data with timestamps earlier than max timestamp
+    old_timestamp = datetime.now() - timedelta(days=2)
+    df_old = pd.DataFrame({
+        'col1': [1],
+        'col2': ['x'],
+        'Timestamp': [old_timestamp]
+    })
+
+    mock_read_csv.return_value = df_old
+    mock_engine = MagicMock()
+
+    # Max timestamp is after all row timestamps
+    mock_conn = MagicMock()
+    mock_conn.__enter__.return_value.execute.return_value.scalar.return_value = datetime.now()
+    mock_engine.connect.return_value = mock_conn
+
+    with patch.object(df_old, 'to_sql') as mock_to_sql:
+        incremental_load(mock_engine, 'fake.csv', 'table_name')
+        mock_to_sql.assert_not_called()  # No insert should happen
 
 @patch('etl_to_postgres.pd.read_csv')
 def test_stream_tbl_postgres_success(mock_read_csv):
-    mock_read_csv.return_value = sample_df
+    mock_read_csv.return_value = sample_df_basic
     mock_engine = MagicMock()
 
-    with patch.object(sample_df, 'to_sql') as mock_to_sql:
+    with patch.object(sample_df_basic, 'to_sql') as mock_to_sql:
         mock_to_sql.return_value = None
         stream_tbl_postgres(mock_engine, 'fake.csv', 'table_name')
         mock_read_csv.assert_called_once_with('fake.csv')
-        mock_to_sql.assert_called_once_with(name='table_name', con=mock_engine, if_exists='append', index=False)
+        mock_to_sql.assert_called_once_with(
+            name='table_name', con=mock_engine, if_exists='replace', index=False
+        )
