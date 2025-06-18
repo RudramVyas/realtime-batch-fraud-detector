@@ -1,10 +1,8 @@
 import pytest
-from pyspark.sql import SparkSession
-from pyspark.sql import Row
-from pyspark.sql.types import *
+from pyspark.sql import SparkSession, Row
 from pyspark.ml import Pipeline
 from pyspark.ml.feature import StringIndexer, OneHotEncoder
-from pyspark.sql.functions import regexp_replace, col, udf
+from pyspark.sql.functions import regexp_replace, udf
 from pyspark.sql.types import ArrayType, DoubleType
 
 @pytest.fixture(scope="session")
@@ -38,7 +36,7 @@ def test_pipeline_transforms(spark):
 
     df = spark.createDataFrame(data)
 
-    # Apply transformations similar to your ETL script
+    # Transformation: clean user_id
     df = df.withColumn("user_id", regexp_replace("user_id", "USER_", "").cast("int"))
 
     categorical_cols = [
@@ -50,30 +48,31 @@ def test_pipeline_transforms(spark):
         "authentication_method"
     ]
 
-    indexers = [
-        StringIndexer(inputCol=col, outputCol=col + "_Index", handleInvalid="keep")
-        for col in categorical_cols
-    ]
-
-    encoders = [
-        OneHotEncoder(inputCol=col + "_Index", outputCol=col + "_vec")
-        for col in categorical_cols
-    ]
+    # Apply StringIndexer and OneHotEncoder
+    indexers = [StringIndexer(inputCol=col, outputCol=f"{col}_Index", handleInvalid="keep") for col in categorical_cols]
+    encoders = [OneHotEncoder(inputCol=f"{col}_Index", outputCol=f"{col}_vec") for col in categorical_cols]
 
     pipeline = Pipeline(stages=indexers + encoders)
     model = pipeline.fit(df)
     df = model.transform(df)
 
-    # Convert vector columns to arrays
+    # Convert vector to array for testing/inspection
     vector_to_array_udf = udf(lambda v: v.toArray().tolist() if v else None, ArrayType(DoubleType()))
-    vec_cols = [col + "_vec" for col in categorical_cols]
+    vec_cols = [f"{col}_vec" for col in categorical_cols]
 
     for vec in vec_cols:
         df = df.withColumn(vec.replace("_vec", "_arr"), vector_to_array_udf(vec))
         df = df.drop(vec)
 
+    # Drop original categorical columns
     df = df.drop(*categorical_cols)
 
-    # Now check expected columns exist
-    for col_name in ["transaction_type_arr", "device_type_arr", "location_arr"]:
-        assert col_name in df.columns
+    # Assert transformed columns exist
+    expected_cols = [f"{col}_arr" for col in categorical_cols] + ["user_id", "transaction_id"]
+    actual_cols = df.columns
+
+    for col_name in expected_cols:
+        assert col_name in actual_cols, f"Missing expected column: {col_name}"
+
+    # Optional: show dataframe for debugging
+    # df.show(truncate=False)
