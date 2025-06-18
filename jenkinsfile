@@ -63,6 +63,16 @@ spec:
         }
       }
     }
+    stage('Run Transformation Unit Tests') {
+      steps {
+        container('python') {
+          sh '''
+            . $VENV_DIR/bin/activate
+            pytest --cache-clear test/test_transformations.py --html=test-reports/transformations-report.html --self-contained-html
+          '''
+        }
+      }
+    }
 
     // stage('Publish Test Results') {
     //   steps {
