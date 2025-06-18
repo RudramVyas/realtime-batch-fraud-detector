@@ -96,13 +96,22 @@ spec:
   }
 }
 
+    // stage('Publish Test Results') {
+    //   steps {
+    //     junit 'data_ingestion_postgres/src/test-results-etl.xml'
+    //     junit 'api/src/test-results-api.xml'
+    //     archiveArtifacts artifacts: '**/test-results-*.xml', fingerprint: true
+    //   }
+    // }
+
     stage('Publish Test Results') {
       steps {
-        junit 'data_ingestion_postgres/src/test-results-etl.xml'
-        junit 'api/src/test-results-api.xml'
-        archiveArtifacts artifacts: '**/test-results-*.xml', fingerprint: true
-      }
-    }
+        junit 'test-reports/test-results-etl.xml'
+        junit 'test-reports/test-results-api.xml'
+        archiveArtifacts artifacts: 'test-reports/test-results-*.xml', fingerprint: true
+  }
+}
+
 
     stage('Debug Workspace') {
       steps {
