@@ -12,22 +12,13 @@ spec:
     command:
     - cat
     tty: true
-    lifecycle:
-      postStart:
-        exec:
-          command:
-          - sh
-          - -c
-          - |
-            apt-get update && apt-get install -y openjdk-11-jdk && echo "Java installed"
+  restartPolicy: Never
 """
     }
   }
 
   environment {
     VENV_DIR = 'unit_testing_bd'
-    JAVA_HOME = '/usr/lib/jvm/java-11-openjdk-amd64'
-    PATH = "${JAVA_HOME}/bin:${env.PATH}"
   }
 
   stages {
@@ -41,9 +32,13 @@ spec:
       steps {
         container('python') {
           sh '''
-            export JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64
-            export PATH=$JAVA_HOME/bin:$PATH
+            # Update and install Java
+            apt-get update && apt-get install -y openjdk-11-jdk
 
+            # Verify Java installation
+            java -version
+
+            # Setup Python venv and install dependencies
             python3 -m venv $VENV_DIR
             . $VENV_DIR/bin/activate
             pip install --upgrade pip
@@ -57,9 +52,6 @@ spec:
       steps {
         container('python') {
           sh '''
-            export JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64
-            export PATH=$JAVA_HOME/bin:$PATH
-
             . $VENV_DIR/bin/activate
             mkdir -p test-reports
             pytest --cache-clear test/test_etl_to_postgres.py --html=test-reports/etl-report.html --self-contained-html
@@ -72,9 +64,6 @@ spec:
       steps {
         container('python') {
           sh '''
-            export JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64
-            export PATH=$JAVA_HOME/bin:$PATH
-
             . $VENV_DIR/bin/activate
             pytest --cache-clear test/test_stream_api.py --html=test-reports/api-report.html --self-contained-html
           '''
@@ -86,9 +75,6 @@ spec:
       steps {
         container('python') {
           sh '''
-            export JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64
-            export PATH=$JAVA_HOME/bin:$PATH
-
             . $VENV_DIR/bin/activate
             pytest --cache-clear test/test_transformations.py --html=test-reports/transformations-report.html --self-contained-html
           '''
