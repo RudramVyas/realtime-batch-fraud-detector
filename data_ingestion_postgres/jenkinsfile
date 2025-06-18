@@ -22,6 +22,7 @@ pipeline {
                             source ${VENV_DIR}/bin/activate
                         fi
 
+                        echo "Virtual environment setup complete."
                         echo "Python version:"
                         python3 --version
 
