@@ -47,7 +47,7 @@ spec:
           sh '''
             . $VENV_DIR/bin/activate
             mkdir -p test-reports
-            pytest --cache-clear data_ingestion_postgres/test/test_etl_to_postgres.py --junitxml=test-reports/test-results-etl.xml
+            pytest --cache-clear test/test_etl_to_postgres.py --junitxml=test-reports/test-results-etl.xml
           '''
         }
       }
