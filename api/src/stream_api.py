@@ -1,9 +1,7 @@
 import os
 import json
-import pandas as pd
 import psycopg2
 from psycopg2.extras import RealDictCursor
-from urllib.parse import quote_plus
 from fastapi import FastAPI
 from dotenv import load_dotenv
 
