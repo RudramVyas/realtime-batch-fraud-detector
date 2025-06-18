@@ -101,7 +101,7 @@ spec:
           echo "Cleaning pytest and Python cache folders to avoid permission issues..."
           rm -rf data_ingestion_postgres/src/.pytest_cache || true
           rm -rf api/src/.pytest_cache || true
-          find . -type d -name '__pycache__' -exec chmod -R u+w {} \; -exec rm -rf {} \; || true
+          find . -type d -name '__pycache__' -exec sh -c 'chmod -R u+w "$0" && rm -rf "$0"' {} \; || true
         '''
       }
     }
