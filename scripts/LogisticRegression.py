@@ -1,15 +1,14 @@
-from pyspark.ml.feature import VectorAssembler
-from pyspark.ml.classification import RandomForestClassifier
-from pyspark.ml import Pipeline
 from pyspark.sql import SparkSession
+from pyspark.ml.feature import VectorAssembler
 from pyspark.ml.linalg import Vectors, VectorUDT
-from pyspark.sql.functions import udf,  col
+from pyspark.sql.functions import udf, col
+from pyspark.ml.classification import LogisticRegression
 from pyspark.sql.types import ArrayType, DoubleType
 from pyspark.ml.evaluation import BinaryClassificationEvaluator, MulticlassClassificationEvaluator
 
 # Create Spark session
 spark = SparkSession.builder \
-    .appName("RandomForest") \
+    .appName("LogisticRegression") \
     .enableHiveSupport() \
     .getOrCreate()
 
@@ -18,10 +17,7 @@ spark.sparkContext.setLogLevel("WARN")
 # Load data from Hive table
 df = spark.sql("SELECT * FROM bd_class_project.cc_fraud_trans_processed")
 
-# Optional: Show schema and few rows to verify
-df.select("user_id", "transaction_amount", "location_arr", "card_type_arr").show(5)
-
-# Define UDF to convert array columns to vector columns
+# Define udf to convert array columns to vector columns
 array_to_vector_udf = udf(lambda arr: Vectors.dense(arr) if arr is not None else None, VectorUDT())
 
 # List your array columns here
@@ -46,20 +42,16 @@ feature_cols = ['transaction_amount', 'account_balance', 'card_age', 'ip_address
                 'device_type_vec', 'merchant_category_vec', 'card_type_vec', 'location_vec', 
                 'authentication_method_vec', 'transaction_type_vec']
 
-assembler = VectorAssembler(inputCols=feature_cols, outputCol="features")
+assembler = VectorAssembler(inputCols=feature_cols, outputCol='features')
+df = assembler.transform(df)
+final_data = df.select("transaction_id", 'features', 'fraud_label')
 
-rf = RandomForestClassifier(labelCol="fraud_label", featuresCol="features", numTrees=100)
+train_data, test_data = final_data.randomSplit([0.7, 0.3], seed=42)
 
-pipeline = Pipeline(stages=[assembler, rf])
+lr = LogisticRegression(featuresCol='features', labelCol='fraud_label')
+lr_model = lr.fit(train_data)
 
-# Train-test split
-train_df, test_df = df.randomSplit([0.7, 0.3], seed=42)
-
-# Train model
-model = pipeline.fit(train_df)
-
-# Predictions
-predictions = model.transform(test_df)
+predictions = lr_model.transform(test_data)
 
 # Define UDF to round probabilities to 2 decimal places
 round_prob_udf = udf(lambda prob: [round(x, 2) for x in prob.toArray()], ArrayType(DoubleType()))
@@ -94,6 +86,5 @@ metrics = {
 # Display metrics
 for key, value in metrics.items():
     print("{}: {:.4f}".format(key, value))
-
 
 
