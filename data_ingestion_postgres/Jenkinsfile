@@ -21,14 +21,6 @@ pipeline {
                             echo "Virtual environment exists, activating..."
                             source ${VENV_DIR}/bin/activate
                         fi
-
-                        echo "Virtual environment setup complete."
-                        echo "Python version:"
-                        python3 --version
-
-                        echo "Pip version and installed packages:"
-                        pip --version
-                        pip list
                     '''
                 }
             }
@@ -38,7 +30,8 @@ pipeline {
                  withCredentials([file(credentialsId: 'my-env-file', variable: 'ENV_FILE')]) {
                     sh '''
                         set -a
-                        source $ENV_FILE
+                        tr -d '\\r' < "$ENV_FILE" > temp_env && mv temp_env "$ENV_FILE"
+                        source "$ENV_FILE"
                         set +a
                         source ${VENV_DIR}/bin/activate
                         python3 src/etl_to_postgres.py inc
