@@ -123,7 +123,8 @@ def parse_args():
 
 def main():
     args = parse_args()
-    load_environment()
+    env_file = os.getenv("ENV_FILE")
+    load_environment(env_file) 
     engine = create_db_engine()
 
     # Environment paths for the CSVs
