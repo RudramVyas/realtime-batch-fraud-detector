@@ -6,10 +6,10 @@ HIVE_DATABASE="bd_class_project"
 HIVE_TABLE="cc_fraud_trans"
 
 # Variables
-HOSTNAME='172.31.14.3'
-DBNAME='testdb'
-USERNAME='consultants'
-PASSWORD='WelcomeItc@2022'
+HOSTNAME="${DB_HOST}"
+DBNAME="${DB_NAME}"
+USERNAME="${DB_USERNAME}"
+PASSWORD="${DB_PASSWORD}"
 TARGET_DIR="/tmp/US_UK_05052025/class_project/input/raw_data_sqoop"
 HIVE_URL="jdbc:hive2://ip-172-31-14-3.eu-west-2.compute.internal:10000/${HIVE_DATABASE};"
 
