@@ -41,77 +41,38 @@ spec:
       }
     }
 
-    // stage('Run ETL Unit Tests') {
-    //   steps {
-    //     container('python') {
-    //       sh '''
-    //         . $VENV_DIR/bin/activate
-    //         cd data_ingestion_postgres/src
-    //         export PYTHONPATH=$(pwd)
-    //         mkdir -p test-reports
-    //         pytest --cache-clear
-    //         pytest ../../test_etl_to_postgres.py --junitxml=test-results-etl.xml
-    //       '''
-    //     }
-    //   }
-    // }
     stage('Run ETL Unit Tests') {
-       steps {
-         container('python') {
-            sh '''
-              . $VENV_DIR/bin/activate
-              mkdir -p test-reports
-              # Run only ETL tests
-              pytest --cache-clear test/test_etl_to_postgres.py --junitxml=test-reports/test-results-etl.xml
-            '''
+      steps {
+        container('python') {
+          sh '''
+            . $VENV_DIR/bin/activate
+            mkdir -p test-reports
+            pytest --cache-clear test/test_etl_to_postgres.py --junitxml=test-reports/test-results-etl.xml
+          '''
+        }
+      }
     }
-  }
-}
-
-    // stage('Run API Unit Tests') {
-    //   steps {
-    //     container('python') {
-    //       sh '''
-    //         . $VENV_DIR/bin/activate
-    //         cd api/src
-    //         export PYTHONPATH=$(pwd)
-    //         mkdir -p test-reports
-    //         pytest --cache-clear
-    //         pytest ../../test/test_stream_api.py --junitxml=test-results-api.xml
-    //       '''
-    //     }
-    //   }
-    // }
 
     stage('Run API Unit Tests') {
       steps {
         container('python') {
           sh '''
             . $VENV_DIR/bin/activate
-            mkdir -p test-reports
-            # Run only API tests
             pytest --cache-clear test/test_stream_api.py --junitxml=test-reports/test-results-api.xml
           '''
+        }
+      }
     }
-  }
-}
-
-    // stage('Publish Test Results') {
-    //   steps {
-    //     junit 'data_ingestion_postgres/src/test-results-etl.xml'
-    //     junit 'api/src/test-results-api.xml'
-    //     archiveArtifacts artifacts: '**/test-results-*.xml', fingerprint: true
-    //   }
-    // }
 
     stage('Publish Test Results') {
       steps {
-        junit 'test-reports/test-results-etl.xml'
-        junit 'test-reports/test-results-api.xml'
+        script {
+          // Publish both reports if they exist
+          junit allowEmptyResults: true, testResults: 'test-reports/test-results-*.xml'
+        }
         archiveArtifacts artifacts: 'test-reports/test-results-*.xml', fingerprint: true
-  }
-}
-
+      }
+    }
 
     stage('Debug Workspace') {
       steps {
@@ -126,7 +87,7 @@ spec:
         container('python') {
           sh '''
             echo "Making workspace writable..."
-            chmod -R u+w ../../
+            chmod -R u+w $WORKSPACE || true
           '''
         }
       }
@@ -135,12 +96,12 @@ spec:
 
   post {
     always {
-      script {
+      container('python') {
         sh '''
           echo "Cleaning pytest and Python cache folders to avoid permission issues..."
           rm -rf data_ingestion_postgres/src/.pytest_cache || true
           rm -rf api/src/.pytest_cache || true
-          find . -type d -name "__pycache__" -exec rm -rf {} + || true
+          find . -type d -name "__pycache__" -exec chmod -R u+w {} \; -exec rm -rf {} \; || true
         '''
       }
     }
