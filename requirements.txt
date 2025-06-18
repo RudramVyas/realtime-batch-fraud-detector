@@ -4,3 +4,6 @@ pytest
 pytest-mock
 python-dotenv
 sqlalchemy
+fastapi
+requests
+

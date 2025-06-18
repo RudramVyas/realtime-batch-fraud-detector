@@ -41,7 +41,7 @@ spec:
       }
     }
 
-    stage('Run Unit Tests') {
+    stage('Run ETL Unit Tests') {
       steps {
         container('python') {
           sh '''
@@ -50,9 +50,32 @@ spec:
             export PYTHONPATH=$(pwd)
             mkdir -p test-reports
             pytest --cache-clear
-            pytest test_etl_to_postgres.py --junitxml=test-results.xml
+            pytest test_etl_to_postgres.py --junitxml=test-results-etl.xml
           '''
         }
+      }
+    }
+
+    stage('Run API Unit Tests') {
+      steps {
+        container('python') {
+          sh '''
+            . $VENV_DIR/bin/activate
+            cd api/src
+            export PYTHONPATH=$(pwd)
+            mkdir -p test-reports
+            pytest --cache-clear
+            pytest ../../test/test_stream_api.py --junitxml=test-results-api.xml
+          '''
+        }
+      }
+    }
+
+    stage('Publish Test Results') {
+      steps {
+        junit 'data_ingestion_postgres/src/test-results-etl.xml'
+        junit 'api/src/test-results-api.xml'
+        archiveArtifacts artifacts: '**/test-results-*.xml', fingerprint: true
       }
     }
 
@@ -74,13 +97,6 @@ spec:
         }
       }
     }
-
-    stage('Publish Test Results') {
-      steps {
-        junit 'data_ingestion_postgres/src/test-results.xml'
-        archiveArtifacts artifacts: 'data_ingestion_postgres/src/test-results.xml', fingerprint: true
-      }
-    }
   }
 
   post {
@@ -89,7 +105,8 @@ spec:
         sh '''
           echo "Cleaning pytest and Python cache folders to avoid permission issues..."
           rm -rf data_ingestion_postgres/src/.pytest_cache || true
-          find data_ingestion_postgres/src -type d -name "__pycache__" -exec rm -rf {} + || true
+          rm -rf api/src/.pytest_cache || true
+          find . -type d -name "__pycache__" -exec rm -rf {} + || true
         '''
       }
     }
