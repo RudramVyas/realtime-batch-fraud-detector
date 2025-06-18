@@ -50,7 +50,7 @@ spec:
             export PYTHONPATH=$(pwd)
             mkdir -p test-reports
             pytest --cache-clear
-            pytest test_etl_to_postgres.py --junitxml=test-results-etl.xml
+            pytest ../../test_etl_to_postgres.py --junitxml=test-results-etl.xml
           '''
         }
       }
