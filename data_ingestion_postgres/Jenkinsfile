@@ -34,7 +34,7 @@ pipeline {
                         source "$ENV_FILE"
                         set +a
                         source ${VENV_DIR}/bin/activate
-                        python3 src/etl_to_postgres.py inc
+                        python3 data_ingestion_postgres/src/etl_to_postgres.py inc
                     '''
                 }
             }
@@ -42,7 +42,7 @@ pipeline {
         stage('Run Bash Script for getting data from Postgres to Hive') {
             steps {
                 script {
-                    sh 'src/incremental_load_script.sh'
+                    sh 'data_ingestion_postgres/src/incremental_load_script.sh'
                 }
             }
         }
