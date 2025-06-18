@@ -47,7 +47,7 @@ spec:
           sh '''
             . $VENV_DIR/bin/activate
             mkdir -p test-reports
-            pytest --cache-clear test/test_etl_to_postgres.py --junitxml=test-reports/test-results-etl.xml
+            pytest --cache-clear test/test_etl_to_postgres.py --html=test-reports/etl-report.html --self-contained-html
           '''
         }
       }
@@ -58,21 +58,51 @@ spec:
         container('python') {
           sh '''
             . $VENV_DIR/bin/activate
-            pytest --cache-clear test/test_stream_api.py --junitxml=test-reports/test-results-api.xml
+            pytest --cache-clear test/test_stream_api.py --html=test-reports/api-report.html --self-contained-html
           '''
         }
       }
     }
 
-    stage('Publish Test Results') {
-      steps {
-        script {
-          // Publish both reports if they exist
-          junit allowEmptyResults: true, testResults: 'test-reports/test-results-*.xml'
-        }
-        archiveArtifacts artifacts: 'test-reports/test-results-*.xml', fingerprint: true
+    // stage('Publish Test Results') {
+    //   steps {
+    //     script {
+    //       // Publish both reports if they exist
+    //       junit allowEmptyResults: true, testResults: 'test-reports/test-results-*.xml'
+    //     }
+    //     archiveArtifacts artifacts: 'test-reports/test-results-*.xml', fingerprint: true
+    //   }
+    // }
+stage('Push HTML Reports to GitHub') {
+  steps {
+    container('python') {
+      withCredentials([string(credentialsId: 'github-pat', variable: 'GITHUB_TOKEN')]) {
+        sh '''
+          git config --global user.email "jenkins@example.com"
+          git config --global user.name "Jenkins CI"
+
+          # Clone the dev_testing branch using your token
+          git clone --branch dev_testing https://$GITHUB_TOKEN@github.com/tc349/Big_Data_Project.git temp-repo
+
+
+          # Make sure the destination folder exists
+          mkdir -p temp-repo/test/reports
+
+          # Copy HTML reports into the desired location
+          cp -r test-reports/*.html temp-repo/test/reports/
+
+          cd temp-repo
+          git add test/reports/*.html
+          git commit -m "Update HTML test reports from Jenkins build ${BUILD_NUMBER}" || echo "No changes to commit"
+          git push origin dev_testing
+        '''
       }
     }
+  }
+}
+
+
+
 
     stage('Debug Workspace') {
       steps {
