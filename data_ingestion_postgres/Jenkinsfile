@@ -43,8 +43,14 @@ pipeline {
         stage('Run Bash Script for getting data from Postgres to Hive') {
             steps {
                 withCredentials([file(credentialsId: 'my-env-file', variable: 'ENV_FILE')]) {
-                    sh 'chmod +x data_ingestion_postgres/src/incremental_load_script.sh'
-                    sh 'data_ingestion_postgres/src/incremental_load_script.sh'
+                    sh '''
+                        set -a
+                        tr -d '\\r' < "$ENV_FILE" > temp_env && mv temp_env "$ENV_FILE"
+                        source "$ENV_FILE"
+                        set +a
+                        chmod +x data_ingestion_postgres/src/incremental_load_script.sh
+                        data_ingestion_postgres/src/incremental_load_script.sh
+                    '''
                 }
             }
         }
