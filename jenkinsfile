@@ -119,7 +119,19 @@ spec:
       }
     }
 
+    //Check the Scala test report
 
+    
+      stage('Check Scala Test Reports') {
+        steps {
+          container('python-java') {
+            sh '''
+              echo "Listing test report XML files in target/test-reports:"
+              ls -l target/test-reports/*.xml || echo "No XML reports found"
+            '''
+          }
+        }
+      }
     //Push the code to github
 
 
