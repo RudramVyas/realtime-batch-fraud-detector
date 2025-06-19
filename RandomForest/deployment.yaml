@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
       - name: rf-model-container
-        image: usman57/fraud-model:latest
+        image: usman57/rf-model:latest
         ports:
         - containerPort: 5000
 ---
