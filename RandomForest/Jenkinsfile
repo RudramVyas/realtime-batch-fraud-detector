@@ -27,13 +27,6 @@ spec:
     volumeMounts:
       - name: docker-graph-storage
         mountPath: /var/lib/docker
-    readinessProbe:
-      exec:
-        command:
-          - docker
-          - info
-      initialDelaySeconds: 10
-      periodSeconds: 5
   volumes:
     - name: docker-graph-storage
       emptyDir: {}
