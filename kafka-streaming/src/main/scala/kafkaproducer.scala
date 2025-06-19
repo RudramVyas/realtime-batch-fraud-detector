@@ -11,7 +11,7 @@ object kafkaproducer {
     import spark.implicits._
 
     var offset = 0
-    val limit = 1000
+    val limit = 10
     val apiUrlBase = "http://18.134.163.221:30080/data"
     val kafkaServer = "ip-172-31-8-235.eu-west-2.compute.internal:9092,ip-172-31-14-3.eu-west-2.compute.internal:9092"
     val topicSampleName = "realtimeData"
