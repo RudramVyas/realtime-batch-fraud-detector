@@ -126,12 +126,13 @@ spec:
         steps {
           container('python-java') {
             sh '''
-              echo "Listing test report XML files in target/test-reports:"
-              ls -l target/test-reports/*.xml || echo "No XML reports found"
+              echo "Listing test report files:"
+              find target/test-reports -type f -name "*.xml" || echo "No reports found"
             '''
           }
         }
       }
+
     //Push the code to github
 
 
