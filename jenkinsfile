@@ -79,6 +79,17 @@ spec:
       }
     }
 
+    stage('Run Randomforest Unit Tests') {
+      steps {
+        container('python-java') {
+          sh '''
+            . $VENV_DIR/bin/activate
+            pytest --cache-clear test/test_randomforest.py --html=test-reports/randomforest-report.html --self-contained-html
+          '''
+        }
+      }
+    }
+
     stage('Push HTML Reports to GitHub') {
       steps {
         container('python-java') {
