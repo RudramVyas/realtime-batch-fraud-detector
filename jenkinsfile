@@ -1,14 +1,14 @@
 pipeline {
   agent {
     kubernetes {
-      label 'python-agent'
+      label 'python-java-agent'
       yaml """
 apiVersion: v1
 kind: Pod
 spec:
   containers:
-  - name: python
-    image: python:3.8-slim
+  - name: python-java
+    image: rhashraf/python-java:latest
     command:
     - cat
     tty: true
@@ -30,11 +30,8 @@ spec:
 
     stage('Setup Python Environment') {
       steps {
-        container('python') {
+        container('python-java') {
           sh '''
-            # Update and install Java
-            apt-get update && apt-get install -y openjdk-11-jdk
-
             # Verify Java installation
             java -version
 
@@ -50,7 +47,7 @@ spec:
 
     stage('Run ETL Unit Tests') {
       steps {
-        container('python') {
+        container('python-java') {
           sh '''
             . $VENV_DIR/bin/activate
             mkdir -p test-reports
@@ -62,7 +59,7 @@ spec:
 
     stage('Run API Unit Tests') {
       steps {
-        container('python') {
+        container('python-java') {
           sh '''
             . $VENV_DIR/bin/activate
             pytest --cache-clear test/test_stream_api.py --html=test-reports/api-report.html --self-contained-html
@@ -73,7 +70,7 @@ spec:
 
     stage('Run Transformation Unit Tests') {
       steps {
-        container('python') {
+        container('python-java') {
           sh '''
             . $VENV_DIR/bin/activate
             pytest --cache-clear test/test_transformations.py --html=test-reports/transformations-report.html --self-contained-html
@@ -84,11 +81,9 @@ spec:
 
     stage('Push HTML Reports to GitHub') {
       steps {
-        container('python') {
+        container('python-java') {
           withCredentials([string(credentialsId: 'github-pat', variable: 'GITHUB_TOKEN')]) {
             sh '''
-              apt-get update && apt-get install -y git
-
               git config --global user.email "jenkins@example.com"
               git config --global user.name "Jenkins CI"
 
@@ -109,7 +104,7 @@ spec:
 
     stage('Debug Workspace') {
       steps {
-        container('python') {
+        container('python-java') {
           sh 'echo "WORKSPACE=$WORKSPACE" && ls -la $WORKSPACE'
         }
       }
@@ -117,7 +112,7 @@ spec:
 
     stage('Fix Permissions') {
       steps {
-        container('python') {
+        container('python-java') {
           sh '''
             echo "Making workspace writable..."
             chmod -R u+w $WORKSPACE || true
@@ -129,7 +124,7 @@ spec:
 
   post {
     always {
-      container('python') {
+      container('python-java') {
         sh '''
           echo "Cleaning pytest and Python cache folders to avoid permission issues..."
           rm -rf data_ingestion_postgres/src/.pytest_cache || true
