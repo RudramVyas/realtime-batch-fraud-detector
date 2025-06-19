@@ -9,7 +9,7 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                git 'https://github.com/tc349/Big_Data_Project/tree/feature/transform-and-model'
+                git branch: 'feature/transform-and-model', url: 'https://github.com/tc349/Big_Data_Project.git'
             }
         }
 
