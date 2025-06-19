@@ -43,6 +43,7 @@ pipeline {
             steps {
                 script {
                     // Apply the Kubernetes deployment and service files
+                    sh 'kubectl delete job rf-train'
                     sh 'kubectl apply -f ml/create_model/deployment.yaml'
                 }
             }
