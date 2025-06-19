@@ -9,7 +9,7 @@ libraryDependencies ++= Seq(
 Test / scalaSource := baseDirectory.value / "big_data_project" / "test" / "scala"
 
 // Enable JUnit-style report plugin
-enablePlugins(JUnitXmlReportPlugin)
+//enablePlugins(JUnitXmlReportPlugin)
 
 
 // Ensure test output directory for Jenkins
