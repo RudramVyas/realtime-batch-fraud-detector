@@ -1,7 +1,7 @@
 pipeline {
     agent any
     triggers {
-        cron('H/5 * * * *') // H/5 means every 5 minutes, spread across available minutes
+        cron('0 10 * * *') // Schedule to run daily at 10:00 AM
     }
     environment {
         VENV_DIR = '/var/lib/jenkins/venvs/inc_load_venv'
