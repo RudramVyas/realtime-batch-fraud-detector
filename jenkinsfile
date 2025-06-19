@@ -89,6 +89,16 @@ spec:
         }
       }
     }
+    stage('Run LogisticRegression Unit Tests') {
+      steps {
+        container('python-java') {
+          sh '''
+            . $VENV_DIR/bin/activate
+            pytest --cache-clear test/test_logisticregression --html=test-reports/logisticregression-report.html --self-contained-html
+          '''
+        }
+      }
+    }
 
     stage('Push HTML Reports to GitHub') {
       steps {
