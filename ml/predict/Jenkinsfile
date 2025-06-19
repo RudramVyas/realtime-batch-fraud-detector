@@ -41,7 +41,7 @@ pipeline {
         stage("Deploy to Kubernetes"){
             steps{
                 script{
-                    sh 'kubectl delete fraud-predict-cron'
+                    sh 'kubectl delete cronjob fraud-predict-cron'
                     sh 'kubectl apply -f ml/predict/predict-cron.yaml'
                 }
             }
