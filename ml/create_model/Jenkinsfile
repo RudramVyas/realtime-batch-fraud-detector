@@ -2,7 +2,7 @@ pipeline {
     agent any
     environment {
         VENV_DIR = 'venv'
-        DOCKER_IMAGE = 'rdv100/train_rf:1.3'
+        DOCKER_IMAGE = 'rdv100/train_rf:1.4'
         KUBECONFIG = credentials('kubeconfig-file') // Reference the kubeconfig credential
         KUBE_NAMESPACE  = 'default'
     }
