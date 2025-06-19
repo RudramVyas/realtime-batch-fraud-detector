@@ -24,6 +24,19 @@ spec:
     args:
       - --host=tcp://0.0.0.0:2375
       - --host=unix:///var/run/docker.sock
+    volumeMounts:
+      - name: docker-graph-storage
+        mountPath: /var/lib/docker
+    readinessProbe:
+      exec:
+        command:
+          - docker
+          - info
+      initialDelaySeconds: 10
+      periodSeconds: 5
+  volumes:
+    - name: docker-graph-storage
+      emptyDir: {}
 """
     }
   }
