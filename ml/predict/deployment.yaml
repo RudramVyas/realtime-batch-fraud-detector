@@ -1,0 +1,21 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: predict-fraud
+spec:
+  backoffLimit: 3
+  ttlSecondsAfterFinished: 3600
+  template:
+    spec:
+      restartPolicy: Never
+      containers:
+      - name: fraud-predicter
+        image: rdv100/predict_fraud:1.3
+        volumeMounts:
+        - name: model
+          mountPath: /app/model
+      volumes:
+      - name: model
+        hostPath:
+          path: /home/ec2-user/BigData_May/bd_class_project/ml/all_ml/model
+          type: Directory
