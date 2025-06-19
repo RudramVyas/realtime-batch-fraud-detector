@@ -94,7 +94,7 @@ spec:
         container('python-java') {
           sh '''
             . $VENV_DIR/bin/activate
-            pytest --cache-clear test/test_logisticregression --html=test-reports/logisticregression-report.html --self-contained-html
+            pytest --cache-clear test/test_logisticregression.py --html=test-reports/logisticregression-report.html --self-contained-html
           '''
         }
       }
