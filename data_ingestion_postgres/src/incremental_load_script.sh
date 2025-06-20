@@ -6,6 +6,7 @@ HIVE_DATABASE="bd_class_project"
 HIVE_TABLE="cc_fraud_trans"
 
 # Variables
+
 hostName="${DB_HOST}"
 dbName="${DB_NAME}"
 userName="${DB_USERNAME}"
@@ -17,6 +18,7 @@ sudo -u hdfs hdfs dfs -chmod -R 777 /tmp/US_UK_05052025/class_project/input/raw_
 sudo -u hdfs hdfs dfs -chmod -R 777 /tmp/US_UK_05052025/class_project/input/raw_data_sqoop/* 
 
 # Fetch the maximum Timestamp value from Hive
+
 lastValue=$(beeline -u "${HIVE_URL}" --silent=true --showHeader=false --outputformat=tsv2 -e \
 "SELECT COALESCE(MAX(\`Timestamp\`), '1970-01-01 00:00:00') FROM ${HIVE_TABLE};" | tail -n 1)
 
