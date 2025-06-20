@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python3.8
 
 import os
 import sys
@@ -123,12 +123,13 @@ def parse_args():
 
 def main():
     args = parse_args()
-    load_environment()
+    env_file = os.getenv("ENV_FILE")
+    load_environment(env_file) 
     engine = create_db_engine()
 
     # Environment paths for the CSVs
     full_csv = os.getenv("FULL_LOAD_CSV", "../data/split/full_load.csv")
-    inc_csv = os.getenv("INCREMENTAL_LOAD_CSV", "../data/split/inc_load.csv")
+    inc_csv = os.getenv("INCREMENTAL_LOAD_CSV", "../data/split/incremental_load.csv")
     streaming_csv = os.getenv("KAFKA_STREAMING_CSV", "../data/split/kafka_streaming.csv")
     table = os.getenv("LOAD_TABLE", "cc_fraud_trans")
 
