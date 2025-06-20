@@ -45,8 +45,8 @@ pipeline{
                             returnStdout: true
                         ).trim()
 
-                        echo raw_count.toInteger()
-                        echo curated_count.toInteger()
+                        echo raw_count
+                        echo curated_count
 
                         if(raw_count.toInteger() > curated_count.toInteger()){
                             
