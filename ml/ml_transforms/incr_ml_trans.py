@@ -108,7 +108,7 @@ def main():
 
     out_path = "/tmp/US_UK_05052025/class_project/input/ml_data/ml_csv"
     df.write.format("csv") \
-      .mode("overwrite") \
+      .mode("append") \
       .option("header", "true") \
       .save(out_path)
 

@@ -14,8 +14,8 @@ pipeline{
                     if(!fullLoadDone){
                         
                         echo "Running Full Load..."
-                        // sh 'spark-submit --master local[*] ml/ml_transforms/full_ml_trans.py'
-                        sh 'spark-submit --master local[*] ml/ml_transforms/incr_ml_trans.py'
+                        sh 'spark-submit --master local[*] ml/ml_transforms/full_ml_trans.py'
+                        // sh 'spark-submit --master local[*] ml/ml_transforms/incr_ml_trans.py'
 
                         writeFile file: 'full_load_done.txt', text: 'done'
 
