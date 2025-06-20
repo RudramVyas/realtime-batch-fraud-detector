@@ -117,7 +117,7 @@ spec:
     //       // junit 'target/test-reports/*.xml'
     //     }
     //   }
-    // }
+    }
 
     //Check the Scala test report
 
