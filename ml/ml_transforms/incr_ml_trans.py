@@ -13,7 +13,18 @@ from pyspark.ml import Pipeline
 
 def main():
     print(" able to run ")
+    spark = SparkSession.builder \
+        .appName("ml_transforms") \
+        .enableHiveSupport() \
+        .getOrCreate()
 
+    # 1) Load and clean header + duplicates
+    df = spark.sql("""
+      SELECT * 
+      FROM bd_class_project.cc_fraud_trans 
+      WHERE transaction_id <> 'Transaction_ID'
+    """)
+    df.show(10)
 
 if __name__ =='__main__':
     main()
