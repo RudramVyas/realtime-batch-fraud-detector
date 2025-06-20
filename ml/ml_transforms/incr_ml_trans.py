@@ -1,7 +1,7 @@
 #!/usr/bin/env python2
 # -*- coding: utf-8 -*-
 
-import os
+import sys
 from pyspark.sql import SparkSession
 from pyspark.sql.functions import (
     col, count, when, regexp_replace,
@@ -28,10 +28,12 @@ def main():
             ).alias("max_ts")
         ) \
         .first()
-    
+
     # Format last_time as string
     last_time = last_time_row["max_ts"].strftime("%Y-%m-%d %H:%M:%S")
     
+
+
     # Load new transactions since last_time
     query = (
         "SELECT * "
@@ -40,6 +42,11 @@ def main():
     ) % last_time
     df = spark.sql(query)
     
+    if df.rdd.isEmpty():
+        print("No new incremental data since", last_time)
+        sys.exit(1)
+        
+
     df = df.dropDuplicates()
     df = df.na.drop()  # if you want to drop any remaining nulls
 
