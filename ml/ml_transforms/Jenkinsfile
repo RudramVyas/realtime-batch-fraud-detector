@@ -2,7 +2,7 @@ pipeline{
     agent any
     triggers{
         // run and check every 15 minutes
-        cron('H/15 * * * *')
+        cron('H */12 * * *')
     }
     stages{
         stage("Execute Full and Inc for curation"){
