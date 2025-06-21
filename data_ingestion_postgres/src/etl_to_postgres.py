@@ -50,6 +50,7 @@ def full_load(engine, csv_path, table_name):
     try:
         df = pd.read_csv(csv_path)
         print(f"Read {len(df)} rows from {csv_path}.")
+        df['Timestamp'] = pd.to_datetime(df['Timestamp'])
         df.to_sql(name=table_name, con=engine, if_exists='replace', index=False)
         print(f"Full load complete: table '{table_name}' replaced.")
     except Exception as e:
@@ -101,6 +102,7 @@ def stream_tbl_postgres(engine, csv_path, table_name):
     try:
         df = pd.read_csv(csv_path)
         print(f"Read {len(df)} rows from {csv_path}.")
+        df['Timestamp'] = pd.to_datetime(df['Timestamp'])
         df.to_sql(name=table_name, con=engine, if_exists='replace', index=False)
         print(f"Streaming table created: data appended to '{table_name}'.")
     except Exception as e:
