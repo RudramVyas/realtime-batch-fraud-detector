@@ -51,7 +51,7 @@ def main():
     # 4) If there’s nothing new, bail out
     if new_rdd.isEmpty():
         print("No new rows since you last processed {} records.".format(processed_count))
-        sys.exit(1)
+        return
 
     # 5) Reconstruct a DataFrame from those new Rows
     df = spark.createDataFrame(new_rdd, schema=raw.schema)
