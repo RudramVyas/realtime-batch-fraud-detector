@@ -4,11 +4,13 @@
 import sys
 from pyspark.sql import SparkSession
 from pyspark.sql.functions import (
-    col, count, when, regexp_replace,
+    col, count, when, regexp_replace, row_number,
     to_timestamp, hour, dayofweek, dayofmonth, udf, max as spark_max
 )
 from pyspark.sql.types import ArrayType, DoubleType
 from pyspark.ml.feature import StringIndexer, OneHotEncoder
+from pyspark.sql.window import Window
+
 from pyspark.ml import Pipeline
 
 def main():
@@ -18,34 +20,41 @@ def main():
         .getOrCreate()
     
     # Load the already processed table
-    curated_tbl = spark.table("bd_class_project.ml_from_csv")
+    # curated_tbl = spark.table("bd_class_project.ml_from_csv")
+    # processed_count = curated_tbl.count()
     
-    # Find the latest timestamp in the curated data
-    last_time_row = curated_tbl \
-        .select(
-            spark_max(
-                to_timestamp(col("timestamp"), "yyyy-MM-dd HH:mm:ss")
-            ).alias("max_ts")
-        ) \
-        .first()
-
-    # Format last_time as string
-    last_time = last_time_row["max_ts"].strftime("%Y-%m-%d %H:%M:%S")
+    # raw_table = spark.table("bd_class_project.cc_fraud_trans")
     
+    # w = Window.orderBy(to_timestamp("timestamp", "yyyy-MM-dd HH:mm:ss"))
+    # src_num = raw_table.withColumn("row_num", row_number().over(w))
+    # df = src_num.filter(col("row_num") > processed_count).drop("row_num")
 
-
-    # Load new transactions since last_time
-    query = (
-        "SELECT * "
-        "FROM bd_class_project.cc_fraud_trans "
-        "WHERE to_timestamp(timestamp, 'yyyy-MM-dd HH:mm:ss') > timestamp('%s')"
-    ) % last_time
-    df = spark.sql(query)
-    
-    if df.rdd.isEmpty():
-        print("No new incremental data since", last_time)
-        sys.exit(1)
+    # if df.rdd.isEmpty():
+    #     print(f"No new rows since you last processed {processed_count} records.")
+    #     sys.exit(1)
         
+    processed_count = spark.table("bd_class_project.ml_from_csv").count()
+
+    # 2) Read + clean your source
+    raw = (spark.table("bd_class_project.cc_fraud_trans")
+              .dropDuplicates()
+              .na.drop())
+
+    # 3) Turn it into an RDD with a 0-based index, then keep only rows > processed_count
+    rdd_with_idx = raw.rdd.zipWithIndex()
+    new_rdd = (
+        rdd_with_idx
+        .filter(lambda pair: pair[1] >= processed_count)   # keep rows whose idx ≥ already‐seen
+        .map(lambda pair: pair[0])                        # drop the index, keep the original Row
+    )
+
+    # 4) If there’s nothing new, bail out
+    if new_rdd.isEmpty():
+        print("No new rows since you last processed {} records.".format(processed_count))
+        sys.exit(1)
+
+    # 5) Reconstruct a DataFrame from those new Rows
+    df = spark.createDataFrame(new_rdd, schema=raw.schema)
 
     df = df.dropDuplicates()
     df = df.na.drop()  # if you want to drop any remaining nulls
