@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python3.8
 
 import os
 import sys
@@ -50,6 +50,7 @@ def full_load(engine, csv_path, table_name):
     try:
         df = pd.read_csv(csv_path)
         print(f"Read {len(df)} rows from {csv_path}.")
+        df['Timestamp'] = pd.to_datetime(df['Timestamp'])
         df.to_sql(name=table_name, con=engine, if_exists='replace', index=False)
         print(f"Full load complete: table '{table_name}' replaced.")
     except Exception as e:
@@ -101,6 +102,7 @@ def stream_tbl_postgres(engine, csv_path, table_name):
     try:
         df = pd.read_csv(csv_path)
         print(f"Read {len(df)} rows from {csv_path}.")
+        df['Timestamp'] = pd.to_datetime(df['Timestamp'])
         df.to_sql(name=table_name, con=engine, if_exists='replace', index=False)
         print(f"Streaming table created: data appended to '{table_name}'.")
     except Exception as e:
@@ -123,12 +125,13 @@ def parse_args():
 
 def main():
     args = parse_args()
-    load_environment()
+    env_file = os.getenv("ENV_FILE")
+    load_environment(env_file) 
     engine = create_db_engine()
 
     # Environment paths for the CSVs
     full_csv = os.getenv("FULL_LOAD_CSV", "../data/split/full_load.csv")
-    inc_csv = os.getenv("INCREMENTAL_LOAD_CSV", "../data/split/inc_load.csv")
+    inc_csv = os.getenv("INCREMENTAL_LOAD_CSV", "../data/split/incremental_load.csv")
     streaming_csv = os.getenv("KAFKA_STREAMING_CSV", "../data/split/kafka_streaming.csv")
     table = os.getenv("LOAD_TABLE", "cc_fraud_trans")
 
