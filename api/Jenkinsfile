@@ -34,6 +34,17 @@ pipeline {
                 }
             }
         }
+        stage('Run Tests') {
+            steps {
+                script {
+                    // Activate virtual environment and run pytest
+                    sh '''
+                        source ${VENV_DIR}/bin/activate
+                        pytest --cache-clear api/test/test_app.py --html=test-reports/api-report.html --self-contained-html
+                    '''
+                }
+            }
+        }
         stage('Build Docker Image') {
             steps {
                 script {
