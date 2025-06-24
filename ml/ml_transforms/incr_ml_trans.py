@@ -36,9 +36,7 @@ def main():
     processed_count = spark.table("bd_class_project.ml_from_csv").count()
 
     # 2) Read + clean your source
-    raw = (spark.table("bd_class_project.cc_fraud_trans")
-              .dropDuplicates()
-              .na.drop())
+    raw = (spark.table("bd_class_project.cc_fraud_trans"))
 
     # 3) Turn it into an RDD with a 0-based index, then keep only rows > processed_count
     rdd_with_idx = raw.rdd.zipWithIndex()
