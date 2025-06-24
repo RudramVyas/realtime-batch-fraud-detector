@@ -30,6 +30,7 @@ pipeline {
                         source ${VENV_DIR}/bin/activate
                         pip install --upgrade pip
                         pip install -r requirements.txt
+                        pip install pytest-html
                     '''
                 }
             }
@@ -40,6 +41,8 @@ pipeline {
                     // Activate virtual environment and run pytest
                     sh '''
                         source ${VENV_DIR}/bin/activate
+                        pytest --version
+                        pip freeze
                         pytest --cache-clear api/test/test_app.py --html=test-reports/api-report.html --self-contained-html
                     '''
                 }
