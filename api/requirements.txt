@@ -3,3 +3,10 @@ uvicorn
 python-dotenv
 sqlalchemy
 psycopg2-binary
+pandas
+pytest
+pytest-mock
+requests
+httpx
+pytest-html
+pyspark
