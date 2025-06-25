@@ -77,8 +77,10 @@ def main():
     print("preds total = ", b)
     print("uniq_preds total = ", c)
     print("out_df total = ", d)
-    # out_df.write.mode("overwrite").insertInto("bd_class_project.predictions_table")
+    out_df.write.mode("overwrite").insertInto("bd_class_project.predictions_table")
 
+    # out_df.write.mode("append").insertInto("bd_class_project.predictions_table")
+    
     spark.stop()
 
 if __name__ == "__main__":
