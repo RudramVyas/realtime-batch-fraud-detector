@@ -16,6 +16,8 @@ from pyspark.ml import Pipeline
 def main():
     spark = SparkSession.builder \
         .appName("ml_transforms") \
+        .config("spark.executor.memory", "8g") \
+        .config("spark.executor.memoryOverhead", "2g") \
         .enableHiveSupport() \
         .getOrCreate()
     
