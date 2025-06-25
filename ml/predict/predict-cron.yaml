@@ -19,7 +19,7 @@ spec:
           restartPolicy: Never
           containers:
           - name: fraud-predicter
-            image: rdv100/predict_fraud:2.5
+            image: rdv100/predict_fraud:2.6
             imagePullPolicy: IfNotPresent
             env:
             - name: HIVE_METASTORE_URIS

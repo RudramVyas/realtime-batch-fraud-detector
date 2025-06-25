@@ -26,7 +26,7 @@ def main():
 
     raw_df = spark.sql(
         f"SELECT * FROM bd_class_project.raw_data_from_realtime "
-        f"WHERE to_timestamp(timestamp, 'yyyy-MM-dd HH:mm:ss') > timestamp('{last_time}')"
+        # f"WHERE to_timestamp(timestamp, 'yyyy-MM-dd HH:mm:ss') > timestamp('{last_time}')"
     )
 
     if raw_df.rdd.isEmpty():
@@ -66,7 +66,7 @@ def main():
     preds   = scored.select("transaction_id","prediction")
     out_df  = raw_df.join(preds, on="transaction_id", how="inner")
 
-    out_df.write.mode("append").insertInto("bd_class_project.predictions_table")
+    out_df.write.mode("overwrite").insertInto("bd_class_project.predictions_table")
 
     spark.stop()
 
