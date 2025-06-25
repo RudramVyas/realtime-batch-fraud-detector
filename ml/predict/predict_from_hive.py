@@ -64,14 +64,19 @@ def main():
     scored  = pipeline.transform(df_ready)
 
     preds   = scored.select("transaction_id","prediction")
-    out_df  = raw_df.join(preds, on="transaction_id", how="inner")
+    # out_df  = raw_df.join(preds, on="transaction_id", how="inner")
+    # keep only the first prediction per transaction
+    uniq_preds = preds.dropDuplicates(["transaction_id"])
+
+    out_df = raw_df.join(uniq_preds, on="transaction_id", how="inner")
 
     out_df.show()
-    a,b,c =  raw_df.count(), preds.count(), out_df.count()
-    print(a,b,c)
+    a,b,c,d =  raw_df.count(), preds.count(),uniq_preds.count(), out_df.count()
+    print(a,b,c,d)
     print("raw_df total = ", a)
     print("preds total = ", b)
-    print("out_df total = ", c)
+    print("uniq_preds total = ", c)
+    print("out_df total = ", d)
     # out_df.write.mode("overwrite").insertInto("bd_class_project.predictions_table")
 
     spark.stop()
