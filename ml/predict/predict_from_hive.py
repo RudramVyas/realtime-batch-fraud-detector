@@ -66,7 +66,8 @@ def main():
     preds   = scored.select("transaction_id","prediction")
     out_df  = raw_df.join(preds, on="transaction_id", how="inner")
 
-    out_df.write.mode("overwrite").insertInto("bd_class_project.predictions_table")
+    out_df.show()
+    # out_df.write.mode("overwrite").insertInto("bd_class_project.predictions_table")
 
     spark.stop()
 
