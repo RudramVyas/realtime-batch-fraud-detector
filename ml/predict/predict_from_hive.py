@@ -74,11 +74,13 @@
 #     main()
 
 #!/usr/bin/env python3
+#!/usr/bin/env python3
 from pyspark.sql import SparkSession
 from pyspark.sql.functions import (
     regexp_replace, to_timestamp, hour, dayofweek, dayofmonth,
-    when, lower, col, max as spark_max, lit
+    when, lower, col, row_number
 )
+from pyspark.sql.window import Window
 from pyspark.ml import PipelineModel
 import sys
 
@@ -89,33 +91,28 @@ def main():
              .enableHiveSupport()
              .getOrCreate())
 
-    # 1) load preds, compute last_time
-    preds_tbl = spark.table("bd_class_project.predictions_table")
-    max_ts_row = preds_tbl.select(
-        spark_max(col("timestamp")).alias("max_ts")
-    ).first()
-    max_ts = max_ts_row["max_ts"]
-    if max_ts is None:
-        last_time_str = "1970-01-01 00:00:00"
-    else:
-        last_time_str = max_ts.strftime("%Y-%m-%d %H:%M:%S")
+    # 1) How many rows have we already processed?
+    preds_tbl      = spark.table("bd_class_project.predictions_table")
+    processed_count = preds_tbl.count()
 
-    # 2) load raw and filter with DataFrame API
+    # 2) Read the full raw stream and tag each row with a monotonically increasing row number
     raw_source = spark.table("bd_class_project.raw_data_from_realtime")
-    # If raw_data.timestamp is already TimestampType, skip to_timestamp:
-    raw_df = raw_source.filter(
-        col("timestamp") > lit(last_time_str).cast("timestamp")
-    )
+    # choose your ORDER BY here—often a timestamp or an ever-increasing ID
+    window = Window.orderBy(col("timestamp"))
+    raw_numbered = raw_source.withColumn("rn", row_number().over(window))
+
+    # 3) Filter to only those rows we haven’t yet processed
+    raw_df = raw_numbered.filter(col("rn") > processed_count).drop("rn")
 
     if raw_df.rdd.isEmpty():
-        print("No new records since", last_time_str)
+        print(f"No new records (processed_count = {processed_count})")
         spark.stop()
         sys.exit(0)
 
-    # 3) feature engineering
+    # 4) Your existing feature engineering + scoring
     df1 = (raw_df
       .withColumn("user_id", regexp_replace("user_id", "^USER_", "").cast("int"))
-      .withColumn("ts", to_timestamp("timestamp","yyyy-MM-dd HH:mm:ss"))
+      .withColumn("ts", to_timestamp("timestamp", "yyyy-MM-dd HH:mm:ss"))
       .withColumn("hour", hour("ts"))
       .withColumn("dayofweek", dayofweek("ts"))
       .withColumn("dayofmonth", dayofmonth("ts"))
@@ -139,7 +136,6 @@ def main():
 
     df_ready = df2.drop(*(list(categories.keys()) + ["timestamp","ts"]))
 
-    # 4) scoring and write
     pipeline = PipelineModel.load("file:///app/model")
     scored  = pipeline.transform(df_ready)
 
@@ -151,3 +147,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
