@@ -67,7 +67,9 @@ def main():
     out_df  = raw_df.join(preds, on="transaction_id", how="inner")
 
     out_df.show()
-    print("total = ", out_df.count())
+    print("raw_df total = ", raw_df.count())
+    print("preds total = ", preds.count())
+    print("out_df total = ", out_df.count())
     # out_df.write.mode("overwrite").insertInto("bd_class_project.predictions_table")
 
     spark.stop()
