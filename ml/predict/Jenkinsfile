@@ -2,7 +2,7 @@ pipeline {
     agent any
     environment {
         VENV_DIR = 'venv'
-        DOCKER_IMAGE = 'rdv100/predict_fraud:2.4'
+        DOCKER_IMAGE = 'rdv100/predict_fraud:2.5'
         KUBECONFIG = credentials('kubeconfig-file')
         KUBE_NAMESPACE  = 'default'
     }
