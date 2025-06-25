@@ -16,8 +16,6 @@ from pyspark.ml import Pipeline
 def main():
     spark = SparkSession.builder \
         .appName("ml_transforms") \
-        .config("spark.executor.memory", "8g") \
-        .config("spark.executor.memoryOverhead", "2g") \
         .enableHiveSupport() \
         .getOrCreate()
     
@@ -123,15 +121,10 @@ def main():
     print("Total rows:", df.count())
 
     out_path = "/tmp/US_UK_05052025/class_project/input/ml_data/ml_csv"
-    # df.write.format("csv") \
-    #   .mode("append") \
-    #   .option("header", "true") \
-    #   .save(out_path)
-    df.coalesce(1) \
-      .write.format("csv") \
+    df.write.format("csv") \
       .mode("append") \
-      .option("header", "true") \
       .save(out_path)
+      # .option("header", "true") \
 
     spark.stop()
 
