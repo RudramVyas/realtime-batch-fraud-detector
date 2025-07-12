@@ -1,8 +1,8 @@
 # Credit Card Fraud Detection System
-<img width="1536" height="1024" alt="image" src="https://github.com/user-attachments/assets/d548d204-e510-4973-a6f9-1b45cd522260" />
 
 ## Overview
 This project implements a comprehensive credit card fraud detection system using a combination of batch and real-time data processing, machine learning, and deployment pipelines. The architecture leverages various tools and technologies to ensure efficient data handling, model training, and real-time prediction.
+<img width="1536" height="1024" alt="image" src="https://github.com/user-attachments/assets/d548d204-e510-4973-a6f9-1b45cd522260" />
 
 ## System Architecture
 The system is divided into several key components:
